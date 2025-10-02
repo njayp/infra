@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: jmalloc/echo-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+config:
+  message: "Hello from echo-app v1!"
+  environment: "development"
+  data: |
+    {
+      "version": "1.0",
+      "status": "healthy",
+      "features": {
+        "echo": true,
+        "logging": true
+      }
+    }
