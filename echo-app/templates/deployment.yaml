@@ -34,10 +34,44 @@ spec:
             configMapKeyRef:
               name: {{ .Chart.Name }}-config
               key: environment
+        # Secret environment variables
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Chart.Name }}-secret
+              key: api-key
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Chart.Name }}-secret
+              key: database-password
         volumeMounts:
         - name: config-volume
           mountPath: /config
           readOnly: true
+        - name: secret-volume
+          mountPath: /secrets
+          readOnly: true
+        # Validation: Check that both config and secret exist
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Validating mounted volumes..."
+                if [ ! -f /config/config.json ]; then
+                  echo "ERROR: Config file missing at /config/config.json"
+                  exit 1
+                fi
+                if [ ! -f /secrets/secret-config.yaml ]; then
+                  echo "ERROR: Secret file missing at /secrets/secret-config.yaml"
+                  exit 1
+                fi
+                echo "✓ Config loaded successfully"
+                echo "✓ Secret loaded successfully"
+                echo "API_KEY is set: ${API_KEY:0:10}..."
         livenessProbe:
           httpGet:
             path: /
@@ -54,3 +88,6 @@ spec:
       - name: config-volume
         configMap:
           name: {{ .Chart.Name }}-config
+      - name: secret-volume
+        secret:
+          secretName: {{ .Chart.Name }}-secret
