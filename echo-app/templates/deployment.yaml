@@ -38,20 +38,6 @@ spec:
         - name: config-volume
           mountPath: /config
           readOnly: true
-        # Validation: Check that config exists
-        lifecycle:
-          postStart:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - |
-                if [ ! -f /config/config.json ]; then
-                  echo "ERROR: Config file missing at /config/config.json"
-                  exit 1
-                fi
-                echo "Config loaded successfully:"
-                cat /config/config.json
         livenessProbe:
           httpGet:
             path: /
